@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Converter — DKK</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                         "Helvetica Neue", Arial, sans-serif;
+            background: #f8f9fa;
+            color: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 3rem 1rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .field {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.375rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.625rem 0.75rem;
+            font-size: 0.9375rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: #fff;
+            color: #1a1a1a;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        input:focus, select:focus {
+            border-color: #2563eb;
+        }
+
+        .row {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .row .field {
+            flex: 1;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: #fff;
+            background: #1a1a1a;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        button:hover {
+            background: #333;
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* Result */
+        .result {
+            margin-top: 1.5rem;
+            display: none;
+        }
+
+        .result.visible {
+            display: block;
+        }
+
+        .result-divider {
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            margin-bottom: 1.25rem;
+        }
+
+        .result-amount {
+            font-size: 1.75rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .result-label {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.8125rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .details {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 0.875rem 1rem;
+            font-size: 0.8125rem;
+            color: #374151;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0;
+        }
+
+        .detail-row + .detail-row {
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .detail-label {
+            color: #6b7280;
+        }
+
+        .detail-value {
+            font-weight: 500;
+            text-align: right;
+        }
+
+        /* Error */
+        .error {
+            margin-top: 1.25rem;
+            padding: 0.75rem 1rem;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            color: #b91c1c;
+            font-size: 0.8125rem;
+            display: none;
+        }
+
+        .error.visible {
+            display: block;
+        }
+
+        /* Divider */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 2rem 0;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .section-divider::before,
+        .section-divider::after {
+            content: "";
+            flex: 1;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .section-divider span {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Bulk card */
+        .card-wide {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .card-wide h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-wide .hint {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 0.625rem 0.75rem;
+            font-size: 0.8125rem;
+            font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, monospace;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: #fff;
+            color: #1a1a1a;
+            outline: none;
+            transition: border-color 0.15s;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        textarea:focus {
+            border-color: #2563eb;
+        }
+
+        textarea.output {
+            background: #f9fafb;
+            cursor: text;
+        }
+
+        .bulk-output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.375rem;
+        }
+
+        .copy-btn {
+            width: auto;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.75rem;
+            background: #fff;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+        }
+
+        .copy-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .bulk-error {
+            margin-top: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            color: #b91c1c;
+            font-size: 0.75rem;
+            font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, monospace;
+            display: none;
+            white-space: pre-line;
+        }
+
+        .bulk-error.visible {
+            display: block;
+        }
+
+        /* Crypto result */
+        .crypto-result {
+            margin-top: 1.5rem;
+            display: none;
+        }
+
+        .crypto-result.visible {
+            display: block;
+        }
+
+        .crypto-amount {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 0.125rem;
+        }
+
+        .crypto-amount-secondary {
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+
+        .crypto-label {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.8125rem;
+            margin-bottom: 1.25rem;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-align: center;
+        }
+
+        footer a {
+            color: #6b7280;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Currency → DKK</h1>
+    <p class="subtitle">Official rates from Danmarks Nationalbank</p>
+
+    <div class="card">
+        <form id="convertForm">
+            <div class="field">
+                <label for="date">Date (DD.MM.YYYY)</label>
+                <input type="text" id="date" placeholder="e.g. 17.04.2026" required>
+            </div>
+
+            <div class="row">
+                <div class="field">
+                    <label for="amount">Amount</label>
+                    <input type="text" id="amount"
+                           placeholder="e.g. 1.000,00" required>
+                </div>
+                <div class="field">
+                    <label for="currency">Currency</label>
+                    <select id="currency" required>
+                        <option value="">Loading…</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn">Convert</button>
+        </form>
+
+        <div class="result" id="result">
+            <hr class="result-divider">
+            <div class="result-amount" id="resultAmount"></div>
+            <div class="result-label" id="resultLabel"></div>
+            <div class="details">
+                <div class="detail-row">
+                    <span class="detail-label">Exchange rate</span>
+                    <span class="detail-value" id="detailRate"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Rate per unit</span>
+                    <span class="detail-value" id="detailUnit"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Date</span>
+                    <span class="detail-value" id="detailDate"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Source</span>
+                    <span class="detail-value" id="detailSource"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="error" id="error"></div>
+    </div>
+
+    <div class="section-divider"><span>or convert multiple at once</span></div>
+
+    <div class="card-wide">
+        <h2>Bulk conversion</h2>
+        <p class="hint">Paste lines as: Date; Currency; Amount — e.g. 03.04.2025; CHF; 144,50</p>
+
+        <div class="field">
+            <label for="bulkInput">Input (one conversion per line)</label>
+            <textarea id="bulkInput" rows="5" placeholder="03.04.2025; CHF; 144,50
+02.04.2025; USD; 200,00"></textarea>
+        </div>
+
+        <button id="bulkBtn">Convert all</button>
+
+        <div class="field" style="margin-top: 1.25rem; margin-bottom: 0;">
+            <div class="bulk-output-header">
+                <label for="bulkOutput">Result</label>
+                <button class="copy-btn" id="copyBtn" style="display:none;">Copy</button>
+            </div>
+            <textarea id="bulkOutput" class="output" rows="5" readonly
+                      placeholder="Results will appear here…"></textarea>
+        </div>
+
+        <div class="bulk-error" id="bulkError"></div>
+    </div>
+
+    <div class="section-divider"><span>Crypto price lookup</span></div>
+
+    <div class="card">
+        <h2 style="font-size:1rem;font-weight:600;margin-bottom:0.25rem;">Crypto → DKK</h2>
+        <p style="font-size:0.75rem;color:#6b7280;margin-bottom:1.25rem;">
+            Price from <a href="https://www.cryptocompare.com" target="_blank" style="color:#6b7280;">CryptoCompare</a>,
+            converted via Nationalbanken USD rate
+        </p>
+
+        <div class="field">
+            <label for="cryptoCoin">Coin</label>
+            <select id="cryptoCoin" required>
+                <option value="">Loading…</option>
+            </select>
+        </div>
+
+        <div class="row">
+            <div class="field">
+                <label for="cryptoDate">Date (DD.MM.YYYY)</label>
+                <input type="text" id="cryptoDate" placeholder="e.g. 16.04.2026" required>
+            </div>
+            <div class="field">
+                <label for="cryptoAmount">Amount</label>
+                <input type="text" id="cryptoAmount" placeholder="e.g. 0,5" required>
+            </div>
+        </div>
+
+        <button id="cryptoBtn">Look up price</button>
+
+        <div class="crypto-result" id="cryptoResult">
+            <hr class="result-divider">
+            <div class="crypto-amount" id="cryptoDkk"></div>
+            <div class="crypto-amount-secondary" id="cryptoUsd"></div>
+            <div class="crypto-label" id="cryptoLabel"></div>
+            <div class="details">
+                <div class="detail-row">
+                    <span class="detail-label">Price per coin (USD)</span>
+                    <span class="detail-value" id="cryptoPriceUsd"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">USD → DKK rate</span>
+                    <span class="detail-value" id="cryptoUsdRate"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Rate date</span>
+                    <span class="detail-value" id="cryptoRateDate"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Price source</span>
+                    <span class="detail-value" id="cryptoSource"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="error" id="cryptoError"></div>
+    </div>
+
+    <div class="section-divider"><span>or look up multiple coins at once</span></div>
+
+    <div class="card-wide">
+        <h2>Bulk crypto lookup</h2>
+        <p class="hint">Paste lines as: Date; Coin; Amount — e.g. 01.04.2025; BTC; 0,5</p>
+
+        <div class="field">
+            <label for="cryptoBulkInput">Input (one lookup per line)</label>
+            <textarea id="cryptoBulkInput" rows="5" placeholder="01.04.2025; BTC; 0,5
+01.04.2025; ETH; 2,25
+01.04.2025; SOL; 100"></textarea>
+        </div>
+
+        <button id="cryptoBulkBtn">Look up all</button>
+
+        <div class="field" style="margin-top: 1.25rem; margin-bottom: 0;">
+            <div class="bulk-output-header">
+                <label for="cryptoBulkOutput">Result</label>
+                <button class="copy-btn" id="cryptoCopyBtn" style="display:none;">Copy</button>
+            </div>
+            <textarea id="cryptoBulkOutput" class="output" rows="5" readonly
+                      placeholder="Results will appear here…"></textarea>
+        </div>
+
+        <div class="bulk-error" id="cryptoBulkError"></div>
+    </div>
+
+    <footer>
+        Data from <a href="https://nationalbanken.statistikbank.dk/DNVALD"
+                     target="_blank">Danmarks Nationalbank</a>
+        · Rates published on banking days only
+    </footer>
+
+<script>
+    const form = document.getElementById("convertForm");
+    const dateInput = document.getElementById("date");
+    const amountInput = document.getElementById("amount");
+    const currencySelect = document.getElementById("currency");
+    const submitBtn = document.getElementById("submitBtn");
+    const resultEl = document.getElementById("result");
+    const errorEl = document.getElementById("error");
+
+    // Default to last banking day (rates aren't available until the next day)
+    const d = new Date();
+    d.setDate(d.getDate() - 1); // yesterday
+    while (d.getDay() === 0 || d.getDay() === 6) {
+        d.setDate(d.getDate() - 1); // skip weekends
+    }
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    dateInput.value = `${dd}.${mm}.${yyyy}`;
+
+    // Load currencies
+    function loadCurrencies() {
+        currencySelect.innerHTML = '<option value="">Loading…</option>';
+        fetch("/api/currencies")
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                currencySelect.innerHTML = data
+                    .map(c => `<option value="${c.code}">${c.code} — ${c.name}</option>`)
+                    .join("");
+                // Default to EUR if available
+                const eurOpt = data.find(c => c.code === "EUR");
+                if (eurOpt) currencySelect.value = "EUR";
+            })
+            .catch(err => {
+                currencySelect.innerHTML = '<option value="">Failed to load</option>';
+                errorEl.textContent = "Could not load currencies: " + err.message
+                    + " — Check the terminal for details.";
+                errorEl.classList.add("visible");
+            });
+    }
+
+    // Retry loading currencies on click if they failed
+    currencySelect.addEventListener("click", () => {
+        if (currencySelect.value === "" && currencySelect.options[0]?.text === "Failed to load") {
+            loadCurrencies();
+        }
+    });
+
+    loadCurrencies();
+
+    // Format number with Danish-style thousands
+    function fmtNum(n, decimals = 2) {
+        return n.toLocaleString("da-DK", {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+        });
+    }
+
+    // European number format: comma as decimal, dot as thousands
+    function fmtEU(n, decimals = 2) {
+        return n.toLocaleString("da-DK", {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+        });
+    }
+
+    // ── Single conversion ────────────────────────────────────────────────
+    submitBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        resultEl.classList.remove("visible");
+        errorEl.classList.remove("visible");
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Converting…";
+
+        // Convert DD.MM.YYYY to YYYY-MM-DD for the API
+        const parts = dateInput.value.split(".");
+        const isoDate = `${parts[2]}-${parts[1].padStart(2,"0")}-${parts[0].padStart(2,"0")}`;
+        // Convert European number format (1.234,56) to API format (1234.56)
+        const amount = amountInput.value.replace(/\./g, "").replace(",", ".");
+        const params = new URLSearchParams({
+            date: isoDate,
+            amount: amount,
+            currency: currencySelect.value,
+        });
+
+        try {
+            const resp = await fetch(`/api/convert?${params}`);
+            const data = await resp.json();
+
+            if (!resp.ok || data.error) {
+                throw new Error(data.error || "Something went wrong.");
+            }
+
+            document.getElementById("resultAmount").textContent =
+                fmtNum(data.result_dkk) + " DKK";
+            document.getElementById("resultLabel").textContent =
+                `${fmtNum(data.amount)} ${data.currency_code} converted on ${data.date}`;
+            document.getElementById("detailRate").textContent =
+                `${fmtNum(data.rate_per_100, 4)} DKK per 100 ${data.currency_code}`;
+            document.getElementById("detailUnit").textContent =
+                `1 ${data.currency_code} = ${fmtNum(data.rate_per_unit, 4)} DKK`;
+            document.getElementById("detailDate").textContent = data.date;
+            document.getElementById("detailSource").textContent = data.source;
+
+            resultEl.classList.add("visible");
+        } catch (err) {
+            errorEl.textContent = err.message;
+            errorEl.classList.add("visible");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Convert";
+        }
+    });
+
+    // ── Bulk conversion ──────────────────────────────────────────────────
+    const bulkBtn = document.getElementById("bulkBtn");
+    const bulkInput = document.getElementById("bulkInput");
+    const bulkOutput = document.getElementById("bulkOutput");
+    const bulkError = document.getElementById("bulkError");
+    const copyBtn = document.getElementById("copyBtn");
+
+    bulkBtn.addEventListener("click", async () => {
+        bulkError.classList.remove("visible");
+        bulkOutput.value = "";
+        copyBtn.style.display = "none";
+
+        const lines = bulkInput.value.trim();
+        if (!lines) return;
+
+        bulkBtn.disabled = true;
+        bulkBtn.textContent = "Converting…";
+
+        try {
+            const resp = await fetch("/api/convert-bulk", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({lines}),
+            });
+            const data = await resp.json();
+
+            if (data.error) throw new Error(data.error);
+
+            // Build CSV output
+            const header = "Date;Currency;Amount;Exchange rate (per 100);DKK";
+            const rows = [];
+            const errors = [];
+
+            for (const r of data) {
+                if (r.error) {
+                    errors.push(`${r.input}: ${r.error}`);
+                } else {
+                    rows.push([
+                        r.date,
+                        r.currency,
+                        fmtEU(r.amount),
+                        fmtEU(r.rate_per_100, 4),
+                        fmtEU(r.result_dkk),
+                    ].join(";"));
+                }
+            }
+
+            if (rows.length > 0) {
+                bulkOutput.value = header + "\n" + rows.join("\n");
+                bulkOutput.rows = Math.min(rows.length + 2, 15);
+                copyBtn.style.display = "inline-block";
+            }
+
+            if (errors.length > 0) {
+                bulkError.textContent = errors.join("\n");
+                bulkError.classList.add("visible");
+            }
+        } catch (err) {
+            bulkError.textContent = err.message;
+            bulkError.classList.add("visible");
+        } finally {
+            bulkBtn.disabled = false;
+            bulkBtn.textContent = "Convert all";
+        }
+    });
+
+    copyBtn.addEventListener("click", () => {
+        bulkOutput.select();
+        document.execCommand("copy");
+        copyBtn.textContent = "Copied!";
+        setTimeout(() => { copyBtn.textContent = "Copy"; }, 1500);
+    });
+
+    // ── Crypto lookup ────────────────────────────────────────────────────
+    const cryptoCoin = document.getElementById("cryptoCoin");
+    const cryptoDate = document.getElementById("cryptoDate");
+    const cryptoAmount = document.getElementById("cryptoAmount");
+    const cryptoBtn = document.getElementById("cryptoBtn");
+    const cryptoResult = document.getElementById("cryptoResult");
+    const cryptoError = document.getElementById("cryptoError");
+
+    // Default crypto date to same as currency date
+    cryptoDate.value = dateInput.value;
+
+    // Load coins
+    fetch("/api/crypto/coins")
+        .then(r => r.json())
+        .then(coins => {
+            cryptoCoin.innerHTML = coins
+                .map(c => `<option value="${c.symbol}">${c.symbol} — ${c.name}</option>`)
+                .join("");
+        })
+        .catch(() => {
+            cryptoCoin.innerHTML = '<option value="">Failed to load</option>';
+        });
+
+    cryptoBtn.addEventListener("click", async () => {
+        cryptoResult.classList.remove("visible");
+        cryptoError.classList.remove("visible");
+        cryptoBtn.disabled = true;
+        cryptoBtn.textContent = "Looking up…";
+
+        // Convert European amount format
+        const amount = cryptoAmount.value.replace(/\./g, "").replace(",", ".");
+
+        const params = new URLSearchParams({
+            coin: cryptoCoin.value,
+            date: cryptoDate.value,
+            amount: amount,
+        });
+
+        try {
+            const resp = await fetch(`/api/crypto/convert?${params}`);
+            const data = await resp.json();
+
+            if (!resp.ok || data.error) {
+                throw new Error(data.error || "Something went wrong.");
+            }
+
+            document.getElementById("cryptoDkk").textContent =
+                fmtEU(data.total_dkk) + " DKK";
+            document.getElementById("cryptoUsd").textContent =
+                fmtEU(data.total_usd) + " USD";
+            document.getElementById("cryptoLabel").textContent =
+                `${fmtEU(data.amount, 8).replace(/0+$/, "").replace(/,$/, "")} ${data.coin} on ${data.date}`;
+            document.getElementById("cryptoPriceUsd").textContent =
+                fmtEU(data.price_usd, 6) + " USD";
+            document.getElementById("cryptoUsdRate").textContent =
+                fmtEU(data.usd_dkk_rate, 4) + " DKK per 100 USD";
+            document.getElementById("cryptoRateDate").textContent =
+                data.usd_dkk_rate_date;
+            document.getElementById("cryptoSource").textContent =
+                data.source_price;
+
+            cryptoResult.classList.add("visible");
+        } catch (err) {
+            cryptoError.textContent = err.message;
+            cryptoError.classList.add("visible");
+        } finally {
+            cryptoBtn.disabled = false;
+            cryptoBtn.textContent = "Look up price";
+        }
+    });
+
+    // ── Bulk crypto lookup ───────────────────────────────────────────────
+    const cryptoBulkBtn = document.getElementById("cryptoBulkBtn");
+    const cryptoBulkInput = document.getElementById("cryptoBulkInput");
+    const cryptoBulkOutput = document.getElementById("cryptoBulkOutput");
+    const cryptoBulkError = document.getElementById("cryptoBulkError");
+    const cryptoCopyBtn = document.getElementById("cryptoCopyBtn");
+
+    cryptoBulkBtn.addEventListener("click", async () => {
+        cryptoBulkError.classList.remove("visible");
+        cryptoBulkOutput.value = "";
+        cryptoCopyBtn.style.display = "none";
+
+        const lines = cryptoBulkInput.value.trim();
+        if (!lines) return;
+
+        cryptoBulkBtn.disabled = true;
+        cryptoBulkBtn.textContent = "Looking up…";
+
+        try {
+            const resp = await fetch("/api/crypto/convert-bulk", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({lines}),
+            });
+            const data = await resp.json();
+
+            if (data.error) throw new Error(data.error);
+
+            const header = "Date;Coin;Amount;Price USD;Total USD;USD/DKK rate;Total DKK";
+            const rows = [];
+            const errors = [];
+
+            for (const r of data) {
+                if (r.error) {
+                    errors.push(`${r.input}: ${r.error}`);
+                } else {
+                    rows.push([
+                        r.date,
+                        r.coin,
+                        fmtEU(r.amount, 8).replace(/0+$/, "").replace(/,$/, ""),
+                        fmtEU(r.price_usd, 6),
+                        fmtEU(r.total_usd),
+                        fmtEU(r.usd_dkk_rate, 4),
+                        fmtEU(r.total_dkk),
+                    ].join(";"));
+                }
+            }
+
+            if (rows.length > 0) {
+                cryptoBulkOutput.value = header + "\n" + rows.join("\n");
+                cryptoBulkOutput.rows = Math.min(rows.length + 2, 15);
+                cryptoCopyBtn.style.display = "inline-block";
+            }
+
+            if (errors.length > 0) {
+                cryptoBulkError.textContent = errors.join("\n");
+                cryptoBulkError.classList.add("visible");
+            }
+        } catch (err) {
+            cryptoBulkError.textContent = err.message;
+            cryptoBulkError.classList.add("visible");
+        } finally {
+            cryptoBulkBtn.disabled = false;
+            cryptoBulkBtn.textContent = "Look up all";
+        }
+    });
+
+    cryptoCopyBtn.addEventListener("click", () => {
+        cryptoBulkOutput.select();
+        document.execCommand("copy");
+        cryptoCopyBtn.textContent = "Copied!";
+        setTimeout(() => { cryptoCopyBtn.textContent = "Copy"; }, 1500);
+    });
+</script>
+
+</body>
+</html>
